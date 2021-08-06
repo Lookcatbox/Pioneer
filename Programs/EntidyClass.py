@@ -1,7 +1,7 @@
 import pygame,math,random
 
 from MathDef import *
-from math import floor
+
 
 class Graph:
     def __init__(self,tpe=0):
@@ -39,48 +39,54 @@ def TriConst(x,y,sz):
 #
 #
 class Entidy:
-    def __init__(self,x,y,tpe,fce,img):
+    def __init__(self,x,y,tpe,fce,img,lfe):
         self.x=x
         self.y=y
         self.type=tpe
         self.face=fce
         self.img=img
+        self.life=lfe
         self.force=Force()
         self.turn=0
     graph=Graph()
     imgs=[]
 class MoveEntidy(Entidy):
-    def __init__(self,x,y,tpe,fce,img):
-        Entidy.__init__(self,x,y,tpe,fce,img)
+    def __init__(self,x,y,tpe,fce,img,lfe):
+        Entidy.__init__(self,x,y,tpe,fce,img,lfe)
     def AI(self):
         pass
 class BlockEntidy(Entidy):
     def __init__(self,x,y,tpe,fce,img):
-        Entidy.__init__(self,x,y,tpe,fce,img)
+        Entidy.__init__(self,x,y,tpe,fce,img,1)
+class SpeclEntidy(Entidy):
+    def __init__(self,x,y,tpe,fce,img):
+        Entidy.__init__(self,x,y,tpe,fce,img,1)
+    def crash():
+        pass
 #
 class Steve(MoveEntidy):
-    def __init__(self,x,y,fce,img):
-        MoveEntidy.__init__(self,x,y,1,fce,img)
+    def __init__(self,x,y,fce,img,lfe=1e5):
+        MoveEntidy.__init__(self,x,y,1,fce,img,lfe)
         self.bag=[Item(0,0) for i in xrange(10)]
         self.push=0
     graph=GrRect(0.3,0.3)
     imgs=[]
 class Pig(MoveEntidy):
-    def __init__(self,x,y,fce,img):
-        MoveEntidy.__init__(self,x,y,11,fce,img)
+    def __init__(self,x,y,fce,img,lfe=5.0):
+        MoveEntidy.__init__(self,x,y,11,fce,img,lfe)
     graph=GrRect(0.5,1)
     imgs=[]
 class Treeman(MoveEntidy):
-    def __init__(self,x,y,fce,img):
-        MoveEntidy.__init__(self,x,y,12,fce,img)
+    def __init__(self,x,y,fce,img,lfe=1e2):
+        MoveEntidy.__init__(self,x,y,12,fce,img,lfe)
     graph=GrRect(1.5,1.5)
     imgs=[]
 class Mouse(MoveEntidy):
-    def __init__(self,x,y,fce,img):
-        MoveEntidy.__init__(self,x,y,13,fce,img)
+    def __init__(self,x,y,fce,img,lfe=1.0):
+        MoveEntidy.__init__(self,x,y,13,fce,img,lfe)
     graph=GrRect(0.3,0.3)
     imgs=[]
-EntNames={1:"Steve",11:"Pig",12:"Treeman",13:"Mouse",1001:"Tree",1002:"Stone",1003:"Bush"}
+EntNames={1:"Steve",11:"Pig",12:"Treeman",13:"Mouse",1001:"Tree",1002:"Stone",1003:"Bush",2001:"Attack"}
 #
 class Tree(BlockEntidy):
     def __init__(self,x,y,fce,img):
@@ -100,15 +106,24 @@ class Stone(BlockEntidy):
     graph=GrRect(0.5,0.5)
     imgs=[]
 #
+class Attack(SpeclEntidy):
+    def __init__(self,x,y,fce,img,lrge,ht):
+        SpeclEntidy.__init__(self,x,y,2001,fce,img)
+        self.graph=GrRect(lrge,lrge)
+        self.ht=ht
+    def crash(self,ent):
+        ent.life-=self.ht
+    imgs=[]
+#
 class Item:
     def __init__(self,idd,cnt):
         self.id=idd
         self.cnt=cnt
         self.img=0
-ItemHeap={0:1,1:64}
-ItemType={0:0,1:2}#0:Sth. Like Pickaxe and Axe 1:Sword 2:Block
+ItemHeap={0:1,1:64,233:1}
+ItemType={0:0,1:2,233:1}#0:Sth. Like Pickaxe and Axe 1:Sword 2:Block
 ToBlock={1:Stone}
-ItemImgs={0:[],1:[]}
+ItemImgs={0:[],1:[],233:[]}
 
 LoadEntImgs={"Steve":1,"Pig":1,"Treeman":1,"Mouse":1,"Tree":3,"Stone":1,"Bush":2}
 
@@ -123,7 +138,7 @@ for r in LoadEntImgs:
             scr.set_colorkey((127,127,127))
             exec "%s.imgs.append(scr)" % (r,)
 
-for i in (0,1):
+for i in (0,1,233):
     scr=pygame.image.load("Datas\Item\Item%d.bmp" % (i,))
     scr.set_colorkey((127,127,127))
     ItemImgs[i].append(scr)

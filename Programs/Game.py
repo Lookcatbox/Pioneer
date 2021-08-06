@@ -1,4 +1,4 @@
-import pygame,math,pickle,random,time,struct
+import pygame,math,pickle,random,time,struct,os
 
 from EntidyClass import *
 from AIDefinition import *
@@ -31,7 +31,7 @@ class Square:
                         Entidies[self.x*32+dx][self.y*32+dy]=set()
         f.write(struct.pack(">H",cnt))
         for ent in deltons:
-            f.write(struct.pack(">Hddf",ent.type,ent.x,ent.y,ent.face))
+            f.write(struct.pack(">Hddff",ent.type,ent.x,ent.y,ent.face,ent.life))
 
 
         cnt=0
@@ -62,8 +62,8 @@ class Square:
                 Blockos[self.x*32+i][self.y*32+j]=strs[i*32+j]
         entnum=struct.unpack(">H",r.read(2))[0]
         for i in xrange(entnum):
-            ges=struct.unpack(">Hddf",r.read(22))
-            exec "ent=%s(%f,%f,%f,0)" % (EntNames[ges[0]],ges[1],ges[2],ges[3])#...
+            ges=struct.unpack(">Hddff",r.read(26))
+            exec "ent=%s(%f,%f,%f,0,%d)" % (EntNames[ges[0]],ges[1],ges[2],ges[3],ges[4])#...
             Addentidy(Entidies,ent)
         entnum=struct.unpack(">H",r.read(2))[0]
         for i in xrange(entnum):
@@ -92,13 +92,13 @@ def Squaremake(x,y):
                     if ents[xx][yy]:
                         r.write(struct.pack(">HBdd",ents[xx][yy][0],ents[xx][yy][1],x*128+xx+0.5,y*128+yy+0.5))
             r.close()
-Entidies={}
 Peoples=[]
 MovementList=[]
 def init(_seed):
-    global seed,BlockEntidies,Entidies,Blockos,Sqlist
+    global seed,BlockEntidies,Entidies,Blockos,Sqlist,SpeclEntidies
     seed=_seed
     BlockEntidies={}
+    SpeclEntidies={}
     Entidies={}
     Blockos={}
     Sqlist={}
@@ -106,6 +106,14 @@ def exit():
     for i in Sqlist.keys():
         Sqlist[i].close()
         del Sqlist[i]
+    path_data = ".\\Map"
+    del_file(path_data)
+
+def del_file(path_data):
+    for i in os.listdir(path_data) :# os.listdir(path_data)
+        file_data = path_data + "\\" + i
+        os.remove(file_data)
+
 def CanPush(bent):
     iex,iey=fl(bent.x),fl(bent.y)
     try:
@@ -154,8 +162,11 @@ def execute():
         if ipx+i in Entidies:
             for j in xrange(-13,14):
                 if ipy+j in Entidies[ipx+i]:
-                    for ent in Entidies[ipx+i][ipy+j]:
-                        LoadObjects.append(ent)
+                    for ent in list(Entidies[ipx+i][ipy+j]):
+                        if ent.life<=0:
+                            Entidies[ipx+i][ipy+j].remove(ent)
+                        else:
+                            LoadObjects.append(ent)
     del ipx,ipy
     for ent in LoadObjects:
         iex,iey=fl(ent.x),fl(ent.y)
@@ -245,6 +256,16 @@ def execute():
         if BlockCross(ent):
             ent.face-=ent.turn
         ent.turn=0
+    for ent in LoadObjects:
+        iex,iey=fl(ent.x),fl(ent.y)
+        for dx,dy in CSq5P2:
+            if iex+dx in SpeclEntidies and \
+               iey+dy in SpeclEntidies[iex+dx]:
+                for spe in SpeclEntidies[iex+dx][iey+dy]:
+                    if Cross(ent,spe):
+                        spe.crash(ent)
+                        print "Attack Hurt one!"
+                
 def BushCross(ent):
     iex,iey=fl(ent.x),fl(ent.y)
     res=1
@@ -254,6 +275,7 @@ def BushCross(ent):
            BlockEntidies[iex+dx][iey+dy].type==1003 and \
            ACross(BlockEntidies[iex+dx][iey+dy],ent,BlockEntidies[iex+dx][iey+dy].slgraph):
             res*=BlockEntidies[iex+dx][iey+dy].slnum
+            
     return res
 def BlockCross(ent):
     iex,iey=fl(ent.x),fl(ent.y)

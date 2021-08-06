@@ -1,4 +1,4 @@
-import pygame,time,pickle,sys,math,os
+import pygame,time,pickle,sys,math
 sys.setrecursionlimit(1000000)
 
 import Game
@@ -91,10 +91,6 @@ y
  \|
   o
 """
-def del_file(path_data):
-    for i in os.listdir(path_data) :# os.listdir(path_data)
-        file_data = path_data + "\\" + i
-        os.remove(file_data)
 
 #
 
@@ -170,7 +166,9 @@ def push_0(pos,lpos):
     editos=0
     dx=fl(mx)-Player.x
     dy=fl(my)-Player.y
-    if Game.ItemType[Player.bag[Player.push].id]==2:
+    if Game.ItemType[Player.bag[Player.push].id]==1:
+        Game.Addentidy(Game.SpeclEntidies,Game.Attack(Player.x-1.0*math.sin(Player.face/radp),Player.y-1.0*math.cos(Player.face/radp),Player.face,0,0.4,1e6))
+    elif Game.ItemType[Player.bag[Player.push].id]==2:
         if min(dx*dx,(dx+1)*(dx+1))+min(dy*dy,(dy+1)*(dy+1))<=9.0:#3*3
             bet=(Game.ToBlock[Player.bag[Player.push].id])(fl(mx)+0.5,fl(my)+0.5,0,0)
             if Game.CanPush(bet):
@@ -238,10 +236,10 @@ pygame.init()
 gametype=0
 #0~... (0:main 10:sandbox 20:multiplas)
 
-errimg=pygame.image.load("Datas/blockerr.bmp")
+errimg=pygame.image.load("Datas/Block/blockerr.bmp")
 blockimg=[errimg for i in xrange(0,100)]
 for i in range(1,15)+[17,20]:
-    blockimg[i]=pygame.image.load("Datas/block%d.bmp"%(i,))
+    blockimg[i]=pygame.image.load("Datas/Block/block%d.bmp"%(i,))
 
 Gblock=pygame.image.load("Datas/GBlock.bmp")
 Bblock=pygame.image.load("Datas/BBlock.bmp")
@@ -329,6 +327,7 @@ flag=True
 while flag:
     if Player.push==9:
         Player.bag[1]=Game.Item(1,64)
+        Player.bag[2]=Game.Item(233,1)
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             flag=False
@@ -407,8 +406,4 @@ while flag:
     pygame.display.flip()
 
 Game.exit()
-
-path_data = r".\Map"
-del_file(path_data)
-
 pygame.quit()
