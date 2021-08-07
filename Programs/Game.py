@@ -290,11 +290,38 @@ def Cross(x,y):
 def ACross(x,y,xg):
     return BCross(x,y,xg,y.graph)
 def BCross(x,y,xg,yg):
-    if xg.type==1 and yg.type==1:
-        return RectCross(x,y,xg,yg)
+    if xg.type==2 and yg.type==2:
+        return AngleCross(x,y,xg,yg)
     else:
         return False
-def RectCross(x,y,xg,yg):
+def AngleCross(x,y,xg,yg):
+    sx=math.sin(x.face/radp)
+    cx=math.cos(x.face/radp)
+    xx,xy=[],[]
+    for p in xg.l:
+        xx.append(x.x+p[0]*cx+p[1]*sx)
+        xy.append(x.y-p[0]*sx+p[1]*cx)
+    sy=math.sin(y.face/radp)
+    cy=math.cos(y.face/radp)
+    yx,yy=[],[]
+    for p in yg.l:
+        yx.append(y.x+p[0]*cy+p[1]*sy)
+        yy.append(y.y-p[0]*sy+p[1]*cy)
+    if min(xx)>max(yx) or max(xx)<min(yx) or \
+       min(xy)>max(yy) or max(xy)<min(yy):
+        return False
+    xl,yl=len(xg.l),len(yg.l)
+    for s0 in xrange(xl):
+         for s1 in xrange(yl):
+             if s0!=s1 and \
+                SegmentCross(xx[s0],xy[s0],xx[s0+1 if s0+1<xl else 0],xy[s0+1 if s0+1<xl else 0],\
+                             yx[s1],yy[s1],yx[s1+1 if s1+1<yl else 0],yy[s1+1 if s1+1<yl else 0]):
+                 return True
+    if PointInGraph(xx[0],xy[0],yx,yy,yl) or PointInGraph(yx[0],yy[0],xx,xy,xl):
+        return True
+    return False
+
+"""def RectCross(x,y,xg,yg):
     rhs=xg.rh*math.sin(x.face/radp)
     rhc=xg.rh*math.cos(x.face/radp)
     rws=xg.rw*math.sin(x.face/radp)
@@ -329,17 +356,19 @@ def RectCross(x,y,xg,yg):
             return True
     if PointInGraph(x0,y0,b) or PointInGraph(xx0,yy0,a):
         return True
-    return False
-def PointInGraph(x,y,g):
+    return False"""
+def PointInGraph(x,y,gx,gy,gl):
     #x same ray
     cnt=0
-    for seg in g:
-        if seg[0]==x and seg[2]==x:
-            continue
-        if max(seg[0],seg[2])==x:
+    for i in xrange(gl-1):
+        if max(gx[i],gx[i+1])==x:
             cnt+=1
-        elif SegmentRayCross(seg[0],seg[1],seg[2],seg[3],x,y):
+        elif SegmentRayCross(gx[i],gy[i],gx[i+1],gy[i+1],x,y):
             cnt+=1
+    if max(gx[gl-1],gx[0])==x:
+        cnt+=1
+    elif SegmentRayCross(gx[gl-1],gy[gl-1],gx[0],gy[0],x,y):
+        cnt+=1
     if cnt%2:
         return True
     return False

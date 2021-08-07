@@ -9,11 +9,13 @@ class Graph:
 class GrNil(Graph):
     def __init__(self):
         Graph.__init__(self,0)
-class GrRect(Graph):
+class GrAngles(Graph):
+    def __init__(self,lis):
+        Graph.__init__(self,2)
+        self.l=lis
+class GrRect(GrAngles):
     def __init__(self,rw,rh):
-        Graph.__init__(self,1)
-        self.rw=rw
-        self.rh=rh
+        GrAngles.__init__(self,((rw,rh),(-rw,rh),(-rw,-rh),(rw,-rh)))
 class Force:
     def __init__(self,x=0,y=0):
         self.x=x
@@ -58,6 +60,8 @@ class MoveEntidy(Entidy):
 class BlockEntidy(Entidy):
     def __init__(self,x,y,tpe,fce,img):
         Entidy.__init__(self,x,y,tpe,fce,img,1)
+    CanBroke=()
+    Hardnum=1e50
 class SpeclEntidy(Entidy):
     def __init__(self,x,y,tpe,fce,img):
         Entidy.__init__(self,x,y,tpe,fce,img,1)
@@ -103,13 +107,15 @@ class Bush(BlockEntidy):
 class Stone(BlockEntidy):
     def __init__(self,x,y,fce,img):
         BlockEntidy.__init__(self,x,y,1002,fce,img)
+    CanBroke=(234,)
+    Hardnum=2
     graph=GrRect(0.5,0.5)
     imgs=[]
 #
 class Attack(SpeclEntidy):
-    def __init__(self,x,y,fce,img,lrge,ht):
+    def __init__(self,x,y,fce,img,lrge,ht):#lrge:half long
         SpeclEntidy.__init__(self,x,y,2001,fce,img)
-        self.graph=GrRect(lrge,lrge)
+        self.graph=GrAngles(((0,-2*lrge),(lrge,0),(-lrge,0)))
         self.ht=ht
     def crash(self,ent):
         ent.life-=self.ht
@@ -120,12 +126,14 @@ class Item:
         self.id=idd
         self.cnt=cnt
         self.img=0
-ItemHeap={0:1,1:64,233:1}
-ItemType={0:0,1:2,233:1}#0:Sth. Like Pickaxe and Axe 1:Sword 2:Block
+ItemHeap={0:1,1:64,233:1,234:1}
+ItemType={0:0,1:1,233:2,234:3}
+#0:Other 1:Block 2:Sword 3:Pickaxe
 ToBlock={1:Stone}
-ItemImgs={0:[],1:[],233:[]}
+PickaxeSpeed={234:1.0}
+ItemImgs={i:[] for i in (0,1,233,234)}
 
-LoadEntImgs={"Steve":1,"Pig":1,"Treeman":1,"Mouse":1,"Tree":3,"Stone":1,"Bush":2}
+LoadEntImgs={"Steve":1,"Pig":1,"Treeman":1,"Mouse":1,"Tree":3,"Stone":1,"Bush":2,"Attack":1}
 
 for r in LoadEntImgs:
     if LoadEntImgs[r]==1:
@@ -138,7 +146,7 @@ for r in LoadEntImgs:
             scr.set_colorkey((127,127,127))
             exec "%s.imgs.append(scr)" % (r,)
 
-for i in (0,1,233):
+for i in (0,1,233,234):
     scr=pygame.image.load("Datas\Item\Item%d.bmp" % (i,))
     scr.set_colorkey((127,127,127))
     ItemImgs[i].append(scr)

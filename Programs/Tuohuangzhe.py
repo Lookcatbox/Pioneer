@@ -119,9 +119,6 @@ def screen_redraw_0():
                 leftsurface.blit(blockimg[b],rects)
             except:
                 leftsurface.blit(errimg,rects)
-    rects=(400+32*(fl(mx)-Player.x),400+32*(fl(my)-Player.y))
-    if howdealpoint:
-        leftsurface.blit(howdealblocks[howdealpoint],rects)
     for i in xrange(27):
         if blockleast[0]+i not in Game.Entidies:
             continue
@@ -144,6 +141,20 @@ def screen_redraw_0():
             scr=scr.convert_alpha()
             rct=scr.get_rect()
             leftsurface.blit(scr,[400+(ent.x-Player.x)*32-rct.width/2,400+(ent.y-Player.y)*32-rct.height/2])
+    for i in xrange(27):
+        if blockleast[0]+i not in Game.SpeclEntidies:
+            continue
+        for j in xrange(27):
+            if blockleast[1]+j not in Game.SpeclEntidies[blockleast[0]+i]:
+                continue
+            for ent in Game.SpeclEntidies[blockleast[0]+i][blockleast[1]+j]:
+                scr=pygame.transform.rotate(ent.imgs[ent.img],ent.face)
+                scr=scr.convert_alpha()
+                rct=scr.get_rect()
+                leftsurface.blit(scr,[400+(ent.x-Player.x)*32-rct.width/2,400+(ent.y-Player.y)*32-rct.height/2])
+    rects=(400+32*(fl(mx)-Player.x),400+32*(fl(my)-Player.y))
+    if howdealpoint:
+        leftsurface.blit(howdealblocks[howdealpoint],rects)
     for i in xrange(10):
         if Player.push==i:
             leftsurface.blit(ltx[i],(TexBarx[i],600))
@@ -164,18 +175,20 @@ def screen_redraw_1():
 def push_0(pos,lpos):
     global editos
     editos=0
-    dx=fl(mx)-Player.x
-    dy=fl(my)-Player.y
+    flmx=fl(mx)
+    flmy=fl(my)
+    dx=flmx-Player.x
+    dy=flmy-Player.y
     if Game.ItemType[Player.bag[Player.push].id]==1:
-        Game.Addentidy(Game.SpeclEntidies,Game.Attack(Player.x-1.0*math.sin(Player.face/radp),Player.y-1.0*math.cos(Player.face/radp),Player.face,0,0.4,1e6))
-    elif Game.ItemType[Player.bag[Player.push].id]==2:
         if min(dx*dx,(dx+1)*(dx+1))+min(dy*dy,(dy+1)*(dy+1))<=9.0:#3*3
-            bet=(Game.ToBlock[Player.bag[Player.push].id])(fl(mx)+0.5,fl(my)+0.5,0,0)
+            bet=(Game.ToBlock[Player.bag[Player.push].id])(flmx+0.5,flmy+0.5,0,0)
             if Game.CanPush(bet):
                 Game.SetBlockentidy(Game.BlockEntidies,bet)
                 Player.bag[Player.push].cnt-=1
                 if not Player.bag[Player.push].cnt:
                     Player.bag[Player.push]=Game.Item(0,0)
+    elif Game.ItemType[Player.bag[Player.push].id]==2:
+        Game.Addentidy(Game.SpeclEntidies,Game.Attack(Player.x-0.5*math.sin(Player.face/radp),Player.y-0.5*math.cos(Player.face/radp),Player.face,0,0.4,1e6))
 def push_1(pos,lpos):
     global editos
     push_0(pos,lpos)
@@ -186,7 +199,7 @@ def move(pos):
     global howdealpoint
     dx=fl(mx)-Player.x
     dy=fl(my)-Player.y
-    if Game.ItemType[Player.bag[Player.push].id]==2:
+    if Game.ItemType[Player.bag[Player.push].id] in (1,3):
         if min(dx*dx,(dx+1)*(dx+1))+min(dy*dy,(dy+1)*(dy+1))<=9.0:#3*3
             howdealpoint=1
         else:
@@ -200,6 +213,29 @@ def push(pos,lpos):
         push_0(pos,lpos)
     elif gametype==1:
         push_1(pos,lpos)
+def pushend(pos,lpos):
+    global digtime
+    digtime=0
+def tickdo():
+    global digtime,digpos
+    flmx=fl(mx)
+    flmy=fl(my)
+    dx=flmx-Player.x
+    dy=flmy-Player.y
+    if ismdown and \
+       Game.ItemType[Player.bag[Player.push].id]==3:
+        if min(dx*dx,(dx+1)*(dx+1))+min(dy*dy,(dy+1)*(dy+1))<=9.0 and \
+           flmx in Game.BlockEntidies and \
+           flmy in Game.BlockEntidies[flmx] and \
+           Player.bag[Player.push].id in Game.BlockEntidies[flmx][flmy].CanBroke:
+            if digpos==(flmx,flmy):
+                digtime+=1
+                if digtime*Game.PickaxeSpeed[Player.bag[Player.push].id]>=Game.BlockEntidies[flmx][flmy].Hardnum:
+                    del Game.BlockEntidies[flmx][flmy]
+                    digtime=0
+            else:
+                digpos=(flmx,flmy)
+                digtime=0
 def screen_redraw(gt):
     if gt==0:
         screen_redraw_0()
@@ -251,7 +287,7 @@ Bblock.set_alpha(127)
 bgcol=(255,255,255)
 blcol=(0,0,0)
 
-version="Tuohuangzhe Pre-30 With Pygame"
+version="Tuohuangzhe Pre-32 With Pygame"
 
 dtx=[]
 ltx=[]
@@ -297,7 +333,8 @@ while sfl:
 Game.init(sed)
 screen=pygame.display.set_mode((1600,850),pygame.RESIZABLE)#0~1599 0~849
 lastgt=lastft=0
-
+digtime=0
+digpos=(0.5,0.5)
 
 
 
@@ -328,14 +365,16 @@ while flag:
     if Player.push==9:
         Player.bag[1]=Game.Item(1,64)
         Player.bag[2]=Game.Item(233,1)
+        Player.bag[3]=Game.Item(234,1)
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             flag=False
         elif event.type==pygame.MOUSEBUTTONDOWN:
             mdownpos=[event.pos[0],event.pos[1]]
+            push([event.pos[0],event.pos[1]],mdownpos[:])
             ismdown=True
         elif event.type==pygame.MOUSEBUTTONUP:
-            push([event.pos[0],event.pos[1]],mdownpos[:])
+            pushend([event.pos[0],event.pos[1]],mdownpos[:])
             ismdown=False
         elif event.type==pygame.KEYDOWN:
             if event.key==pygame.K_LSHIFT or event.key==pygame.K_RSHIFT:
@@ -400,6 +439,7 @@ while flag:
         Game.frame()
     if time.time()-lastgt>=0.05:
         lastgt=time.time()
+        tickdo()
         Game.execute()
     screen_redraw(gametype)
     
