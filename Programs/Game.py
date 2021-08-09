@@ -29,13 +29,6 @@ class Square:
                         for ent in Entidies[self.x*32+dx][self.y*32+dy]:
                             deltons.append(ent)
                         Entidies[self.x*32+dx][self.y*32+dy]=set()
-        f.write(struct.pack(">H",cnt))
-        for ent in deltons:
-            f.write(struct.pack(">Hddff",ent.type,ent.x,ent.y,ent.face,ent.life))
-
-
-        cnt=0
-        deltons=[]
         for dx in xrange(32):
             if self.x*32+dx in BlockEntidies:
                 for dy in xrange(32):
@@ -45,7 +38,8 @@ class Square:
                         del BlockEntidies[self.x*32+dx][self.y*32+dy]
         f.write(struct.pack(">H",cnt))
         for ent in deltons:
-            f.write(struct.pack(">HBdd",ent.type,ent.img,ent.x,ent.y))
+            f.write(ent.Pack())
+        f.close()
     def get(self):
         print "Get "+str(self.x)+" "+str(self.y)
         try:
@@ -62,14 +56,14 @@ class Square:
                 Blockos[self.x*32+i][self.y*32+j]=strs[i*32+j]
         entnum=struct.unpack(">H",r.read(2))[0]
         for i in xrange(entnum):
-            ges=struct.unpack(">Hddff",r.read(26))
-            exec "ent=%s(%f,%f,%f,0,%d)" % (EntNames[ges[0]],ges[1],ges[2],ges[3],ges[4])#...
-            Addentidy(Entidies,ent)
-        entnum=struct.unpack(">H",r.read(2))[0]
-        for i in xrange(entnum):
-            ges=struct.unpack(">HBdd",r.read(19))
-            exec "ent=%s(%f,%f,0,%d)" % (EntNames[ges[0]],ges[2],ges[3],ges[1])#...
-            SetBlockentidy(BlockEntidies,ent)
+            strs=r.read(2)
+            entnum=struct.unpack(">H",strs)[0]
+            exec "entype=%s" % (EntNames[entnum],)
+            strs=strs+r.read(entype.Packsize-2)
+            if entnum<=1000:
+                Addentidy(Entidies,entype.Dispack(strs))
+            else:
+                SetBlockentidy(BlockEntidies,entype.Dispack(strs))
         r.close()
 def Squaremake(x,y):
     bio,blk,ents=Biome.GetSquare(x,y,seed)
@@ -79,7 +73,6 @@ def Squaremake(x,y):
             for dx in xrange(32):
                 for dy in xrange(32):
                     r.write(struct.pack(">H",blk[i*32+dx][j*32+dy]))
-            r.write(b'\x00\x00')
             
             cnt=0
             for xx in xrange(i*32,i*32+32):
@@ -167,7 +160,6 @@ def execute():
                             Entidies[ipx+i][ipy+j].remove(ent)
                         else:
                             LoadObjects.append(ent)
-    del ipx,ipy
     for ent in LoadObjects:
         iex,iey=fl(ent.x),fl(ent.y)
         for dx,dy in CSq5:
@@ -256,6 +248,8 @@ def execute():
         if BlockCross(ent):
             ent.face-=ent.turn
         ent.turn=0
+    for atk in Peoples[0].atkbl:
+         atk.x,atk.y,atk.face=Peoples[0].x-0.5*math.sin(Peoples[0].face/radp),Peoples[0].y-0.5*math.cos(Peoples[0].face/radp),Peoples[0].face
     for ent in LoadObjects:
         iex,iey=fl(ent.x),fl(ent.y)
         for dx,dy in CSq5P2:
@@ -265,7 +259,17 @@ def execute():
                     if Cross(ent,spe):
                         spe.crash(ent)
                         print "Attack Hurt one!"
-                
+    for i in xrange(-13,14):
+        if ipx+i in SpeclEntidies:
+            for j in xrange(-13,14):
+                if ipy+j in SpeclEntidies[ipx+i]:
+                    for ent in list(SpeclEntidies[ipx+i][ipy+j]):
+                        ent.life-=1
+                        if ent.life<=0:
+                            SpeclEntidies[ipx+i][ipy+j].remove(ent)
+    for atk in list(Peoples[0].atkbl):
+        if atk.life<=0:
+            Peoples[0].atkbl.remove(atk)
 def BushCross(ent):
     iex,iey=fl(ent.x),fl(ent.y)
     res=1
@@ -320,43 +324,6 @@ def AngleCross(x,y,xg,yg):
     if PointInGraph(xx[0],xy[0],yx,yy,yl) or PointInGraph(yx[0],yy[0],xx,xy,xl):
         return True
     return False
-
-"""def RectCross(x,y,xg,yg):
-    rhs=xg.rh*math.sin(x.face/radp)
-    rhc=xg.rh*math.cos(x.face/radp)
-    rws=xg.rw*math.sin(x.face/radp)
-    rwc=xg.rw*math.cos(x.face/radp)
-    x0=x.x-rhs-rwc
-    y0=x.y-rhc+rws
-    x1=x.x-rhs+rwc
-    y1=x.y-rhc-rws
-    x2=x.x+rhs+rwc
-    y2=x.y+rhc-rws
-    x3=x.x+rhs-rwc
-    y3=x.y+rhc+rws
-    rrhs=yg.rh*math.sin(y.face/radp)
-    rrhc=yg.rh*math.cos(y.face/radp)
-    rrws=yg.rw*math.sin(y.face/radp)
-    rrwc=yg.rw*math.cos(y.face/radp)
-    xx0=y.x-rrhs-rrwc
-    yy0=y.y-rrhc+rrws
-    xx1=y.x-rrhs+rrwc
-    yy1=y.y-rrhc-rrws
-    xx2=y.x+rrhs+rrwc
-    yy2=y.y+rrhc-rrws
-    xx3=y.x+rrhs-rrwc
-    yy3=y.y+rrhc+rrws
-    a=((x0,y0,x1,y1),(x1,y1,x2,y2),(x2,y2,x3,y3),(x3,y3,x0,y0))
-    b=((xx0,yy0,xx1,yy1),(xx1,yy1,xx2,yy2),(xx2,yy2,xx3,yy3),(xx3,yy3,xx0,yy0))
-    if min(x0,x1,x2,x3)>max(xx0,xx1,xx2,xx3) or max(x0,x1,x2,x3)<min(xx0,xx1,xx2,xx3) or \
-       min(y0,y1,y2,y3)>max(yy0,yy1,yy2,yy3) or max(y0,y1,y2,y3)<min(yy0,yy1,yy2,yy3):
-        return False
-    for seg,segg in ((0,1),(0,2),(0,3),(1,0),(1,2),(1,3),(2,0),(2,1),(2,3),(3,0),(3,1),(3,2)):
-        if SegmentCross(a[seg][0],a[seg][1],a[seg][2],a[seg][3],b[segg][0],b[segg][1],b[segg][2],b[segg][3]):
-            return True
-    if PointInGraph(x0,y0,b) or PointInGraph(xx0,yy0,a):
-        return True
-    return False"""
 def PointInGraph(x,y,gx,gy,gl):
     #x same ray
     cnt=0

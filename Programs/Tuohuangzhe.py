@@ -188,7 +188,10 @@ def push_0(pos,lpos):
                 if not Player.bag[Player.push].cnt:
                     Player.bag[Player.push]=Game.Item(0,0)
     elif Game.ItemType[Player.bag[Player.push].id]==2:
-        Game.Addentidy(Game.SpeclEntidies,Game.Attack(Player.x-0.5*math.sin(Player.face/radp),Player.y-0.5*math.cos(Player.face/radp),Player.face,0,0.4,1e6))
+        atk=Game.Attack(Player.x-0.35*math.sin(Player.face/radp),Player.y-0.35*math.cos(Player.face/radp),Player.face,0,0.3,1e6,1)
+        Player.atkbl.add(atk)
+        Game.Addentidy(Game.SpeclEntidies,atk)
+        #1tick=0.05s
 def push_1(pos,lpos):
     global editos
     push_0(pos,lpos)
@@ -231,6 +234,7 @@ def tickdo():
             if digpos==(flmx,flmy):
                 digtime+=1
                 if digtime*Game.PickaxeSpeed[Player.bag[Player.push].id]>=Game.BlockEntidies[flmx][flmy].Hardnum:
+                    Game.Addentidy(Game.SpeclEntidies,Game.Dropitem(flmx+.5,flmy+.5,Game.Item(Game.ToItem[Game.BlockEntidies[flmx][flmy].type],1)))
                     del Game.BlockEntidies[flmx][flmy]
                     digtime=0
             else:
