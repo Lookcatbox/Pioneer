@@ -95,6 +95,7 @@ def init(_seed):
     Entidies={}
     Blockos={}
     Sqlist={}
+    AIDef_init(SpeclEntidies)
 def exit():
     for i in Sqlist.keys():
         Sqlist[i].close()
@@ -186,8 +187,13 @@ def execute():
                                 
 
     for ent in LoadObjects:
-        x=ent.AI()
-        
+        ent.AI(Peoples[0])
+    for i in xrange(-13,14):
+        if ipx+i in SpeclEntidies:
+            for j in xrange(-13,14):
+                if ipy+j in SpeclEntidies[ipx+i]:
+                    for ent in list(SpeclEntidies[ipx+i][ipy+j]):
+                        ent.AI(Peoples[0])
     for ent in LoadObjects:
         if ent.force.x==0 and ent.force.y==0:
             continue

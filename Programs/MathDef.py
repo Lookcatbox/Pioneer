@@ -15,3 +15,10 @@ CSq5=((3,1),(3,0),(3,-1), \
       (-3,1),(-3,0),(-3,-1))
 def fl(x):
     return int(math.floor(x+1e-7))
+def gface(x,y):
+    if y==400:
+        if x<=400:
+            return 90
+        else:
+            return -90
+    return math.atan(float(x-400)/float(y-400))*radp+180*(y>400)

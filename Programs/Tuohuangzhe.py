@@ -149,6 +149,8 @@ def screen_redraw_0():
                 continue
             for ent in Game.SpeclEntidies[blockleast[0]+i][blockleast[1]+j]:
                 scr=pygame.transform.rotate(ent.imgs[ent.img],ent.face)
+                if type(ent)==Game.Cat:
+                    print "r"
                 scr=scr.convert_alpha()
                 rct=scr.get_rect()
                 leftsurface.blit(scr,[400+(ent.x-Player.x)*32-rct.width/2,400+(ent.y-Player.y)*32-rct.height/2])
@@ -191,6 +193,8 @@ def push_0(pos,lpos):
         atk=Game.Attack(Player.x-0.35*math.sin(Player.face/radp),Player.y-0.35*math.cos(Player.face/radp),Player.face,0,0.3,1e6,1)
         Player.atkbl.add(atk)
         Game.Addentidy(Game.SpeclEntidies,atk)
+        res=Game.Cat(Player.x-10*math.sin(Player.face/radp),Player.y-10*math.cos(Player.face/radp))
+        Game.Addentidy(Game.SpeclEntidies,res)
         #1tick=0.05s
 def push_1(pos,lpos):
     global editos
@@ -263,14 +267,6 @@ class edito:
         #screen.draw()
 #
 
-def gface(x,y):
-    if y==400:
-        if x<=400:
-            return 90
-        else:
-            return -90
-    return math.atan(float(x-400)/float(y-400))*radp+180*(y>400)
-#
 pygame.init()
 
 gametype=0
@@ -291,7 +287,7 @@ Bblock.set_alpha(127)
 bgcol=(255,255,255)
 blcol=(0,0,0)
 
-version="Tuohuangzhe Pre-32 With Pygame"
+version="Tuohuangzhe Pre-34 With Pygame"
 
 dtx=[]
 ltx=[]
@@ -370,6 +366,7 @@ while flag:
         Player.bag[1]=Game.Item(1,64)
         Player.bag[2]=Game.Item(233,1)
         Player.bag[3]=Game.Item(234,1)
+        Player.bag[4]=Game.Item(235,1)
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             flag=False

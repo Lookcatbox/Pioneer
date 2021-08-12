@@ -56,7 +56,7 @@ class Entidy:
     @classmethod
     def Dispack(str):
         pass
-    graph=Graph()
+    graph=GrNil()
     imgs=[]
 class MoveEntidy(Entidy):
     def __init__(self,x,y,tpe,fce,img,lfe):
@@ -69,7 +69,7 @@ class MoveEntidy(Entidy):
         ges=struct.unpack(">Hddff",str)
         exec "res=%s(%f,%f,%f,0,%d)" % (EntNames[ges[0]],ges[1],ges[2],ges[3],ges[4])
         return res
-    def AI(self):
+    def AI(self,player):
         pass
 class BlockEntidy(Entidy):
     def __init__(self,x,y,tpe,fce,img):
@@ -87,11 +87,13 @@ class BlockEntidy(Entidy):
 class SpeclEntidy(Entidy):
     def __init__(self,x,y,tpe,fce,img,lfe=1):
         Entidy.__init__(self,x,y,tpe,fce,img,lfe)
-    def crash():
+    def crash(self,ent):
+        pass
+    def AI(self,player):
         pass
 #
 class Steve(MoveEntidy):
-    def __init__(self,x,y,fce,img,lfe=1e5):
+    def __init__(self,x,y,fce,img,lfe=100.0):
         MoveEntidy.__init__(self,x,y,1,fce,img,lfe)
         self.bag=[Item(0,0) for i in xrange(10)]
         self.push=0
@@ -118,6 +120,8 @@ EntNames={1:"Steve",11:"Pig",12:"Treeman",13:"Mouse",14:"DropItem",1001:"Tree",1
 class Tree(BlockEntidy):
     def __init__(self,x,y,fce,img):
         BlockEntidy.__init__(self,x,y,1001,fce,img)
+    CanBroke=(235,)
+    Hardnum=2
     graph=GrRect(0.4,0.4)
     imgs=[]
 class Bush(BlockEntidy):
@@ -162,9 +166,17 @@ class Dropitem(SpeclEntidy):
         g=struct.unpack(">HddfHBB",str)
         exec "res=%s(%f,%f,Item(%d,%d,%d),%f)" % (EntNames[g[0]],g[1],g[2],g[4],g[6],g[5],g[3])
         return res
-    def crash(self,ent):
-        pass
     graph=GrRect(0.15,0.15)
+class Cat(SpeclEntidy):
+    def __init__(self,x,y):
+        SpeclEntidy.__init__(self,x,y,2003,0.0,0,1e10000)
+    def crash(self,ent):
+        ent.life=-1e10000
+        print "Cat.crash make"
+    Pack=MoveEntidy.Pack
+    Packsize=MoveEntidy.Packsize
+    Dispack=MoveEntidy.Dispack
+    graph=GrRect(0.5,0.5)
 #
 class Item:
     def __init__(self,idd,cnt,img=0):
@@ -172,16 +184,16 @@ class Item:
         self.img=img
         self.cnt=cnt
         self.img=0
-ItemHeap={0:1,1:64,233:1,234:1}
-ItemType={0:0,1:1,233:2,234:3}
-#0:Other 1:Block 2:Sword 3:Pickaxe
+ItemHeap={0:1,1:64,233:1,234:1,235:1}
+ItemType={0:0,1:1,233:2,234:3,235:3}
+#0:Other 1:Block 2:Sword 3:Pickaxe/Axe
 ToBlock={1:Stone}
-PickaxeSpeed={234:1.0}
-ItemImgs={i:[] for i in (0,1,233,234)}
+PickaxeSpeed={234:1.0,235:1.0}
+ItemImgs={i:[] for i in (0,1,233,234,235)}
 
-ToItem={1002:1}
+ToItem={1001:1,1002:1}
 
-LoadEntImgs={"Steve":1,"Pig":1,"Treeman":1,"Mouse":1,"Tree":3,"Stone":1,"Bush":2,"Attack":1}
+LoadEntImgs={"Steve":1,"Pig":1,"Treeman":1,"Mouse":1,"Tree":3,"Stone":1,"Bush":2,"Attack":1,"Cat":1}
 
 for r in LoadEntImgs:
     if LoadEntImgs[r]==1:
@@ -194,7 +206,7 @@ for r in LoadEntImgs:
             scr.set_colorkey((127,127,127))
             exec "%s.imgs.append(scr)" % (r,)
 
-for i in (0,1,233,234):
+for i in (0,1,233,234,235):
     scr=pygame.image.load("Datas\Item\Item%d.bmp" % (i,))
     scr.set_colorkey((127,127,127))
     ItemImgs[i].append(scr)
