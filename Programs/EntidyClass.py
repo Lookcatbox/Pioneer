@@ -171,8 +171,7 @@ class Cat(SpeclEntidy):
     def __init__(self,x,y):
         SpeclEntidy.__init__(self,x,y,2003,0.0,0,1e10000)
     def crash(self,ent):
-        ent.life=-1e10000
-        print "Cat.crash make"
+        ent.life=0
     Pack=MoveEntidy.Pack
     Packsize=MoveEntidy.Packsize
     Dispack=MoveEntidy.Dispack

@@ -71,6 +71,22 @@ gtkey[121]=['y','Y']
 gtkey[122]=['z','Z']
 gtkey[32]=[' ',' ']
 #gtkey is Key->Char Dict
+def Int_tSurface(num):
+    l=len(str(num))
+    res=pygame.Surface((4*l-1,5))
+    res.fill((127,127,127))
+    pos=4*l-5
+    if num<0:
+       res.blit(fontonege,(0,0))
+    elif num==0:
+       res.blit(fontonum[0],(0,0))
+    while num:
+        res.blit(fontonum[num%10],(pos,0))
+        pos-=4
+        num/=10
+    res.set_colorkey((127,127,127))
+    return res
+
 
 #Game Direction Pos:
 """
@@ -165,6 +181,14 @@ def screen_redraw_0():
         leftsurface.blit(Game.ItemImgs[Player.bag[i].id][Player.bag[i].img],(TexBarx[i]+1,601))
         if Player.bag[i].cnt>1:
             leftsurface.blit(fonto_10.render(str(Player.bag[i].cnt),True,blcol,bgcol),(TexBarx[i]+24,627))
+    #32*200
+    pygame.draw.rect(leftsurface,(0,0,0),(765,0,34,202),1)
+    pygame.draw.rect(leftsurface,(128,128,128),(766,1,32,200),0)
+    if fl(Player.life*2)>0:
+        pygame.draw.rect(leftsurface,(255,127,127),(766,1,32,fl(Player.life*2)),0)
+    nur=Int_tSurface(fl(Player.life))
+    nur=pygame.transform.scale2x(nur)
+    leftsurface.blit(nur,(782-nur.get_width()/2,102-nur.get_height()/2))
     screen.blit(leftsurface,[0,0])
 TexBarx=(528,240,272,304,336,368,400,432,464,496)
 #[240+32*9]+[208+32*i for i in xrange(1,10)]
@@ -287,7 +311,7 @@ Bblock.set_alpha(127)
 bgcol=(255,255,255)
 blcol=(0,0,0)
 
-version="Tuohuangzhe Pre-34 With Pygame"
+version="Tuohuangzhe Classic 0.2 With Pygame"
 
 dtx=[]
 ltx=[]
@@ -296,6 +320,10 @@ for i in xrange(10):
     ltx.append(pygame.image.load("Datas/LTex%d.bmp"%(i,)))
     dtx[-1].set_alpha(127)
     ltx[-1].set_alpha(127)
+fontonum=[]
+for i in xrange(10):
+    fontonum.append(pygame.image.load("Datas/Font/Font%d.bmp"%(i,)))
+fontonege=pygame.image.load("Datas/Font/Nege.bmp")
 fonto_10=pygame.font.Font(None,10)
 fonto_20=pygame.font.Font(None,20)
 gt1_comup=fonto_20.render(version,False,blcol,bgcol)
@@ -331,7 +359,7 @@ while sfl:
 
 
 Game.init(sed)
-screen=pygame.display.set_mode((1600,850),pygame.RESIZABLE)#0~1599 0~849
+screen=pygame.display.set_mode((800,800))#0~799 0~799
 lastgt=lastft=0
 digtime=0
 digpos=(0.5,0.5)
