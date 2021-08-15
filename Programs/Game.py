@@ -264,7 +264,6 @@ def execute():
                 for spe in SpeclEntidies[iex+dx][iey+dy]:
                     if Cross(ent,spe):
                         spe.crash(ent)
-                        print "Attack Hurt one!"
     for i in xrange(-13,14):
         if ipx+i in SpeclEntidies:
             for j in xrange(-13,14):

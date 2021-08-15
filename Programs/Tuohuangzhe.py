@@ -75,7 +75,7 @@ def Int_tSurface(num):
     l=len(str(num))
     res=pygame.Surface((4*l-1,5))
     res.fill((127,127,127))
-    pos=4*l-5
+    pos=4*l-4
     if num<0:
        res.blit(fontonege,(0,0))
     elif num==0:
@@ -83,7 +83,7 @@ def Int_tSurface(num):
     while num:
         res.blit(fontonum[num%10],(pos,0))
         pos-=4
-        num/=10
+        num=int(num/10.0)
     res.set_colorkey((127,127,127))
     return res
 
@@ -165,8 +165,6 @@ def screen_redraw_0():
                 continue
             for ent in Game.SpeclEntidies[blockleast[0]+i][blockleast[1]+j]:
                 scr=pygame.transform.rotate(ent.imgs[ent.img],ent.face)
-                if type(ent)==Game.Cat:
-                    print "r"
                 scr=scr.convert_alpha()
                 rct=scr.get_rect()
                 leftsurface.blit(scr,[400+(ent.x-Player.x)*32-rct.width/2,400+(ent.y-Player.y)*32-rct.height/2])
@@ -311,7 +309,7 @@ Bblock.set_alpha(127)
 bgcol=(255,255,255)
 blcol=(0,0,0)
 
-version="Tuohuangzhe Classic 0.2 With Pygame"
+version="Tuohuangzhe Pre-35 With Pygame"
 
 dtx=[]
 ltx=[]

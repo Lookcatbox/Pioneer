@@ -172,7 +172,7 @@ class Cat(SpeclEntidy):
     def __init__(self,x,y):
         SpeclEntidy.__init__(self,x,y,2003,0.0,0,1e10000)
     def crash(self,ent):
-        ent.life=0
+        ent.life-=1
     Pack=MoveEntidy.Pack
     Packsize=MoveEntidy.Packsize
     Dispack=MoveEntidy.Dispack
@@ -184,14 +184,14 @@ class Item:
         self.img=img
         self.cnt=cnt
         self.img=0
-ItemHeap={0:1,1:64,233:1,234:1,235:1}
-ItemType={0:0,1:1,233:2,234:3,235:3}
+ItemHeap={0:1,1:64,2:64,233:1,234:1,235:1}
+ItemType={0:0,1:1,2:1,233:2,234:3,235:3}
 #0:Other 1:Block 2:Sword 3:Pickaxe/Axe
 ToBlock={1:Stone}
 PickaxeSpeed={234:1.0,235:1.0}
-ItemImgs={i:[] for i in (0,1,233,234,235)}
+ItemImgs={i:[] for i in (0,1,2,233,234,235)}
 
-ToItem={1001:1,1002:1}
+ToItem={1001:2,1002:1}
 
 LoadEntImgs={"Steve":1,"Pig":1,"Treeman":1,"Mouse":1,"Tree":3,"Stone":1,"Bush":2,"Attack":1,"Cat":1}
 
@@ -206,7 +206,7 @@ for r in LoadEntImgs:
             scr.set_colorkey((127,127,127))
             exec "%s.imgs.append(scr)" % (r,)
 
-for i in (0,1,233,234,235):
+for i in (0,1,2,233,234,235):
     scr=pygame.image.load("Datas\Item\Item%d.bmp" % (i,))
     scr.set_colorkey((127,127,127))
     ItemImgs[i].append(scr)
