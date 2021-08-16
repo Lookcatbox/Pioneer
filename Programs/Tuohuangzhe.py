@@ -1,4 +1,4 @@
-import pygame,time,pickle,sys,math
+import pygame,time,pickle,sys,math,random
 sys.setrecursionlimit(1000000)
 
 import Game
@@ -78,12 +78,13 @@ def Int_tSurface(num):
     pos=4*l-4
     if num<0:
        res.blit(fontonege,(0,0))
+       num=-num
     elif num==0:
        res.blit(fontonum[0],(0,0))
     while num:
         res.blit(fontonum[num%10],(pos,0))
         pos-=4
-        num=int(num/10.0)
+        num/=10
     res.set_colorkey((127,127,127))
     return res
 
@@ -178,7 +179,7 @@ def screen_redraw_0():
             leftsurface.blit(dtx[i],(TexBarx[i],600))
         leftsurface.blit(Game.ItemImgs[Player.bag[i].id][Player.bag[i].img],(TexBarx[i]+1,601))
         if Player.bag[i].cnt>1:
-            leftsurface.blit(fonto_10.render(str(Player.bag[i].cnt),True,blcol,bgcol),(TexBarx[i]+24,627))
+            leftsurface.blit(Int_tSurface(Player.bag[i].cnt),(TexBarx[i]+24,625))
     #32*200
     pygame.draw.rect(leftsurface,(0,0,0),(765,0,34,202),1)
     pygame.draw.rect(leftsurface,(128,128,128),(766,1,32,200),0)
@@ -195,6 +196,14 @@ def screen_redraw_1():
     screen.blit(gt1_comup,(1180,23))
     pygame.draw.rect(screen,blcol,(1180,46,350,35),2)
     gt0_re.draw(screen,(1185,54))
+    xsf=Int_tSurface(fl(Player.x/32))
+    ysf=Int_tSurface(fl(Player.y/32))
+    xsf=pygame.transform.scale2x(xsf)
+    xsf=pygame.transform.scale2x(xsf)
+    ysf=pygame.transform.scale2x(ysf)
+    ysf=pygame.transform.scale2x(ysf)
+    screen.blit(xsf,(0,0))
+    screen.blit(ysf,(xsf.get_width()+16,0))
 #
 def push_0(pos,lpos):
     global editos
@@ -215,8 +224,8 @@ def push_0(pos,lpos):
         atk=Game.Attack(Player.x-0.35*math.sin(Player.face/radp),Player.y-0.35*math.cos(Player.face/radp),Player.face,0,0.3,1e6,1)
         Player.atkbl.add(atk)
         Game.Addentidy(Game.SpeclEntidies,atk)
-        res=Game.Cat(Player.x-10*math.sin(Player.face/radp),Player.y-10*math.cos(Player.face/radp))
-        Game.Addentidy(Game.SpeclEntidies,res)
+        #res=Game.Cat(Player.x-10*math.sin(Player.face/radp),Player.y-10*math.cos(Player.face/radp))
+        #Game.Addentidy(Game.SpeclEntidies,res)
         #1tick=0.05s
 def push_1(pos,lpos):
     global editos
@@ -309,7 +318,7 @@ Bblock.set_alpha(127)
 bgcol=(255,255,255)
 blcol=(0,0,0)
 
-version="Tuohuangzhe Pre-35 With Pygame"
+version="Tuohuangzhe Classic0.2.3 With Pygame"
 
 dtx=[]
 ltx=[]
@@ -434,16 +443,13 @@ while flag:
                 elif event.key in gtkey:
                     editos.fpos+=1
                     editos.string=editos.string+gtkey[event.key][int(issdown)]
-            elif event.key==pygame.K_F3:
-                isf3down=False
             elif event.key==pygame.K_r:
-                if isf3down:
-                    if gametype==0:
-                        gametype=1
-                        connect(1)
-                    else:
-                        gametype=0
-                        connect(0)
+                if gametype==0:
+                    gametype=1
+                    connect(1)
+                else:
+                    gametype=0
+                    connect(0)
             elif event.key==pygame.K_w:
                 iswdown=False
                 
@@ -464,13 +470,20 @@ while flag:
     if time.time()-lastft>=1:
         lastft=time.time()
         Game.frame()
+        while 1:
+            f=random.random()*360-180
+            if min(f+360-Player.face,Player.face+360-f,abs(f-Player.face))>=60:
+                break
+        res=Game.Cat(Player.x-15*math.sin(f/radp),Player.y-15*math.cos(f/radp))
+        Game.Addentidy(Game.SpeclEntidies,res)
     if time.time()-lastgt>=0.05:
         lastgt=time.time()
         tickdo()
         Game.execute()
     screen_redraw(gametype)
-    
     pygame.display.flip()
 
 Game.exit()
+print("Your point:")
+print(mx+my)
 pygame.quit()

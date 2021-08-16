@@ -41,7 +41,6 @@ class Square:
             f.write(ent.Pack())
         f.close()
     def get(self):
-        print "Get "+str(self.x)+" "+str(self.y)
         try:
             r=open("Map/m_%d_%d.map" % (self.x,self.y),"rb")
         except:
@@ -104,6 +103,7 @@ def exit():
     del_file(path_data)
 
 def del_file(path_data):
+    print ("succeed in deleting files:",os.listdir(path_data))
     for i in os.listdir(path_data) :# os.listdir(path_data)
         file_data = path_data + "\\" + i
         os.remove(file_data)

@@ -40,7 +40,7 @@ def TriConst(x,y,sz):
 #
 #
 class Entidy:
-    def __init__(self,x,y,tpe,fce,img,lfe,spd):
+    def __init__(self,x,y,tpe,fce,img,lfe):
         self.x=x
         self.y=y
         self.type=tpe
@@ -49,7 +49,6 @@ class Entidy:
         self.life=lfe
         self.force=Force()
         self.turn=0
-        self.speed=spd
     def Pack(self):
         pass
     def Packsize(self):
@@ -60,8 +59,8 @@ class Entidy:
     graph=GrNil()
     imgs=[]
 class MoveEntidy(Entidy):
-    def __init__(self,x,y,tpe,fce,img,lfe,spd):
-        Entidy.__init__(self,x,y,tpe,fce,img,lfe,spd)
+    def __init__(self,x,y,tpe,fce,img,lfe):
+        Entidy.__init__(self,x,y,tpe,fce,img,lfe)
     def Pack(self):
         return struct.pack(">Hddff",self.type,self.x,self.y,self.face,self.life)
     Packsize=26
@@ -74,7 +73,7 @@ class MoveEntidy(Entidy):
         pass
 class BlockEntidy(Entidy):
     def __init__(self,x,y,tpe,fce,img):
-        Entidy.__init__(self,x,y,tpe,fce,img,1,0)
+        Entidy.__init__(self,x,y,tpe,fce,img,1)
     def Pack(self):
         return struct.pack(">HBdd",self.type,self.img,self.x,self.y)
     Packsize=19
@@ -87,33 +86,33 @@ class BlockEntidy(Entidy):
     Hardnum=1e10000
 class SpeclEntidy(Entidy):
     def __init__(self,x,y,tpe,fce,img,lfe=1):
-        Entidy.__init__(self,x,y,tpe,fce,img,lfe,spd=0.35)
+        Entidy.__init__(self,x,y,tpe,fce,img,lfe)
     def crash(self,ent):
         pass
     def AI(self,player):
         pass
 #
 class Steve(MoveEntidy):
-    def __init__(self,x,y,fce,img,lfe=100,spd=0.06):
-        MoveEntidy.__init__(self,x,y,1,fce,img,lfe,spd)
+    def __init__(self,x,y,fce,img,lfe=100.0):
+        MoveEntidy.__init__(self,x,y,1,fce,img,lfe)
         self.bag=[Item(0,0) for i in xrange(10)]
         self.push=0
         self.atkbl=set()
     graph=GrRect(0.3,0.3)
     imgs=[]
 class Pig(MoveEntidy):
-    def __init__(self,x,y,fce,img,lfe=5.0,spd=0.07):
-        MoveEntidy.__init__(self,x,y,11,fce,img,lfe,spd)
+    def __init__(self,x,y,fce,img,lfe=5.0):
+        MoveEntidy.__init__(self,x,y,11,fce,img,lfe)
     graph=GrRect(0.5,1)
     imgs=[]
 class Treeman(MoveEntidy):
-    def __init__(self,x,y,fce,img,lfe=1e2,spd=0.07):
-        MoveEntidy.__init__(self,x,y,12,fce,img,lfe,spd)
+    def __init__(self,x,y,fce,img,lfe=1e2):
+        MoveEntidy.__init__(self,x,y,12,fce,img,lfe)
     graph=GrRect(1.5,1.5)
     imgs=[]
 class Mouse(MoveEntidy):
-    def __init__(self,x,y,fce,img,lfe=1.0,spd=0.35):
-        MoveEntidy.__init__(self,x,y,13,fce,img,lfe,spd)
+    def __init__(self,x,y,fce,img,lfe=1.0):
+        MoveEntidy.__init__(self,x,y,13,fce,img,lfe)
     graph=GrRect(0.3,0.3)
     imgs=[]
 EntNames={1:"Steve",11:"Pig",12:"Treeman",13:"Mouse",14:"DropItem",1001:"Tree",1002:"Stone",1003:"Bush",2001:"Attack"}
@@ -167,6 +166,9 @@ class Dropitem(SpeclEntidy):
         g=struct.unpack(">HddfHBB",str)
         exec "res=%s(%f,%f,Item(%d,%d,%d),%f)" % (EntNames[g[0]],g[1],g[2],g[4],g[6],g[5],g[3])
         return res
+    def crash(self,ent):
+        if ent.type==1:
+            ent.GetItem(self)
     graph=GrRect(0.15,0.15)
 class Cat(SpeclEntidy):
     def __init__(self,x,y):
@@ -185,7 +187,7 @@ class Item:
         self.cnt=cnt
         self.img=0
 ItemHeap={0:1,1:64,2:64,233:1,234:1,235:1}
-ItemType={0:0,1:1,2:1,233:2,234:3,235:3}
+ItemType={0:0,1:1,2:0,233:2,234:3,235:3}
 #0:Other 1:Block 2:Sword 3:Pickaxe/Axe
 ToBlock={1:Stone}
 PickaxeSpeed={234:1.0,235:1.0}
