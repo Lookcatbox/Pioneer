@@ -4,7 +4,7 @@ from EntidyClass import *
 from MathDef import *
 
 def AIDef_init(speclent):
-    global SpeclEnt
+    global SpeclEnt,Ent
     SpeclEnt=speclent
 #
 def ride(f,peo):
@@ -37,6 +37,12 @@ Pig.AI=WalkAI(0.875,0.07)
 Treeman.AI=WalkAI(0.875,0.07)
 Mouse.AI=WalkAI(1.0/6.0,0.35)
 Cat.AI=ChaseAI
+
+def PigDeath(self):
+    if random.random()<0.5:
+        Addentidy(SpeclEnt,Dropitem(fl(self.x)+random.random()*1.5-0.25,fl(self.y)+random.random()*1.5-0.25,Item(11,1)))
+
+Pig.dead=PigDeath
 
 def PeopleGetItem(self,dritem):
     for nm in (1,2,3,4,5,6,7,8,9,0):

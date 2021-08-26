@@ -103,7 +103,6 @@ def exit():
     del_file(path_data)
 
 def del_file(path_data):
-    print ("succeed in deleting files:",os.listdir(path_data))
     for i in os.listdir(path_data) :# os.listdir(path_data)
         file_data = path_data + "\\" + i
         os.remove(file_data)
@@ -158,6 +157,7 @@ def execute():
                 if ipy+j in Entidies[ipx+i]:
                     for ent in list(Entidies[ipx+i][ipy+j]):
                         if ent.life<=0:
+                            ent.dead()
                             Entidies[ipx+i][ipy+j].remove(ent)
                         else:
                             LoadObjects.append(ent)
