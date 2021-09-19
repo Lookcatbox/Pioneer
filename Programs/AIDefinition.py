@@ -3,9 +3,11 @@ import random
 from EntidyClass import *
 from MathDef import *
 
-def AIDef_init(speclent):
+SpeclEnt=0
+def AIDef_init(speclent,ent):
     global SpeclEnt,Ent
     SpeclEnt=speclent
+    Ent=ent
 #
 def ride(f,peo):
     ent.force.x+=f.x
@@ -19,16 +21,12 @@ def move(speed,ent):
     ent.force.x-=speed*math.sin(ent.face/radp)
     ent.force.y-=speed*math.cos(ent.face/radp)
 #
-def back_route(peo):
-    peo.turn.x=-peo.turn.x
-    peo.turn.y=-peo.turn.y
-    
-def ChaseAI(self,player):
-    SpeclEnt[fl(self.x)][fl(self.y)].remove(self)
-    self.face=gface(player.x-self.x,player.y-self.y)
+def ChaseAI(self,player,e=SpeclEnt):
+    e[fl(self.x)][fl(self.y)].remove(self)
+    self.face=180+math.atan2(player.x-self.x,player.y-self.y)*radp
     self.x=0.9*self.x+0.1*player.x
     self.y=0.9*self.y+0.1*player.y
-    Addentidy(SpeclEnt,self)
+    Addentidy(e,self)
 def WalkAI(ch,sp):
     def Temp(self,player):
         if random.random()<ch:
@@ -36,17 +34,19 @@ def WalkAI(ch,sp):
         else:
             route((random.random()-0.5)*30,self)
     return Temp
-
-def BackAI(ch,sp):
-    def Temp(self,player):
-            back_route(self)
-            move(sp,self)
-    return Temp
-
+def RandomMove(self,player):
+    if self.npctype==2:
+        return ChaseAI(self,player,Ent)
+    Ent[fl(self.x)][fl(self.y)].remove(self)
+    self.x=player.x+(random.random()-0.5)*25
+    self.y=player.y+(random.random()-0.5)*25
+    self.face=180+math.atan2(player.x-self.x,player.y-self.y)*radp
+    Addentidy(Ent,self)
 Pig.AI=WalkAI(0.875,0.07)
 Treeman.AI=WalkAI(0.875,0.07)
 Mouse.AI=WalkAI(1.0/6.0,0.35)
 Cat.AI=ChaseAI
+tmpNPC.AI=RandomMove
 
 def PigDeath(self):
     if random.random()<0.5:

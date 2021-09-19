@@ -94,7 +94,7 @@ def init(_seed):
     Entidies={}
     Blockos={}
     Sqlist={}
-    AIDef_init(SpeclEntidies)
+    AIDef_init(SpeclEntidies,Entidies)
 def exit():
     for i in Sqlist.keys():
         Sqlist[i].close()

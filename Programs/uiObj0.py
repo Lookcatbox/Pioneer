@@ -1,4 +1,4 @@
-import time,pickle,sys,math,random,os,AIDefinition,EntidyClass
+import time,pickle,sys,math,random,os
 sys.setrecursionlimit(1000000)
 
 import Game
@@ -54,9 +54,8 @@ def gametype_0():
     gt0_re=edito(1180,35,fonto_20)
 #
 def screen_redraw_0():
-    leftsurface=screen
     blockleast=[fl(Player.x)-13,fl(Player.y)-13]
-    leftsurface.fill((255,255,255))
+    screen.fill((128,128,128))
     for i in xrange(27):
         for j in xrange(27):
             rects=(400+32*(blockleast[0]+i-Player.x),400+32*(blockleast[1]+j-Player.y))
@@ -112,6 +111,12 @@ def screen_redraw_0():
         leftsurface.blit(Game.ItemImgs[Player.bag[i].id][Player.bag[i].img],(TexBarx[i]+1,601))
         if Player.bag[i].cnt>1:
             leftsurface.blit(Int_tSurface(Player.bag[i].cnt),(TexBarx[i]+24,625))
+    for i in xrange(10,30):
+        screen.blit(dtx[-1],(950+i%5*32,86+i/5*32))
+        screen.blit(Game.ItemImgs[Player.bag[i].id][Player.bag[i].img],(951+i%5*32,87+i/5*32))
+        if Player.bag[i].cnt>1:
+            screen.blit(Int_tSurface(Player.bag[i].cnt),(975+i%5*32,108+i/5*32))
+    #86=150-2*32
     #32*200
     pygame.draw.rect(leftsurface,(0,0,0),(765,0,34,202),1)
     pygame.draw.rect(leftsurface,(128,128,128),(766,1,32,200),0)
@@ -127,6 +132,13 @@ def screen_redraw_0():
         pygame.draw.rect(leftsurface,(255,220,55),(748,1,16,fl(Player.hunger+Game.EatGet[Player.bag[Player.push].id])),0)
     if fl(Player.hunger)>0:
         pygame.draw.rect(leftsurface,(255,165,0),(748,1,16,fl(Player.hunger)),0)
+#oxygen
+    pygame.draw.rect(leftsurface,(0,0,0),(731,0,18,102),1)
+    pygame.draw.rect(leftsurface,(128,128,128),(732,1,16,100),0)
+    if fl(Player.oxygen)>0:
+        pygame.draw.rect(leftsurface,(192,192,192),(732,1,16,fl(Player.oxygen)),0)
+
+    screen.blit(leftsurface,(0,0))
 
 TexBarx=(528,240,272,304,336,368,400,432,464,496)
 #[240+32*9]+[208+32*i for i in xrange(1,10)]
@@ -195,6 +207,15 @@ def push(pos,lpos):
 def pushend(pos,lpos):
     global digtime
     digtime=0
+def seconddo():
+    flpx=fl(Player.x)
+    flpy=fl(Player.y)
+    if Game.Blockos[flpx][flpy]==8:
+        Player.oxygen-=15.0
+    elif Player.oxygen<100.0:
+        Player.oxygen=min(Player.oxygen+35.0,100.0)
+    if Player.oxygen<=0 and Player.life>0:
+        Player.life+=Player.oxygen*0.2
 def tickdo():
     global digtime,digpos,eattime
     flmx=fl(mx)
@@ -228,7 +249,7 @@ def tickdo():
                 decrease_bag(Player.push)
                 eattime=0
 def spawnblock(x,y):
-    if Game.Blockos[x][y]==2:
+    if Game.Blockos[x][y]==2 and (x not in Game.BlockEntidies or y not in Game.BlockEntidies[x] or not Game.BlockEntidies[x][y].graph.type):
         if random.random()<0.2:
             Game.Addentidy(Game.Entidies,Game.Pig(x+.5,y+.5,0,0))
             Game.Addentidy(Game.Entidies,Game.Pig(x+.5,y+.5,0,0))
@@ -270,10 +291,10 @@ class edito:
 def main(pg,gtkey,sed):
     global gametype,errimg,blockimg,GBlock,BBlock,bgcol,blcol,dtx,ltx,fontonum, \
 fontonege,fonto_10,fonto_20,gt1_comup,howdealpoint,howdealblocks,mx,my,Player, \
-ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
+ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime,leftsurface
     pygame=pg
     pygame.init()
-    AI_class_decide=1
+    
     gametype=0
     #0~... (0:main 10:sandbox 20:multiplas)
 
@@ -292,7 +313,7 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
     bgcol=(255,255,255)
     blcol=(0,0,0)
 
-    version="Tuohuangzhe Pre-40 With Pygame"
+    version="Tuohuangzhe Pre-41 With Pygame"
 
     dtx=[]
     ltx=[]
@@ -301,6 +322,7 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
         ltx.append(pygame.image.load("Datas/LTex%d.bmp"%(i,)))
         dtx[-1].set_alpha(127)
         ltx[-1].set_alpha(127)
+    dtx.append(pygame.image.load("Datas/Tex.bmp"))
     fontonum=[]
     for i in xrange(10):
         fontonum.append(pygame.image.load("Datas/Font/Font%d.bmp"%(i,)))
@@ -326,7 +348,8 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
     howdealblocks={1:Gblock,2:Bblock}
 
     Game.init(sed)
-    screen=pygame.display.set_mode((800,800))#0~799 0~799
+    screen=pygame.display.set_mode((1500,800))#0~799 0~799
+    leftsurface=pygame.Surface((800,800))
     lastgt=lastft=lastht=0
     ecnt=0
     digtime=0
@@ -351,8 +374,9 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
 
     TestTreeman=Game.Treeman(63.5,63.5,0,0)
     Game.Addentidy(Game.Entidies,TestTreeman)
-    #pygame.mixer.music.load("Datas/Music/Music1.mp3")
-    #pygame.mixer.music.play(-1)
+    pygame.mixer.music.load("Datas/Music/1.mp3")
+    pygame.mixer.music.set_volume(0.2)
+    pygame.mixer.music.play(-1)
 
     flag=True
     while flag:
@@ -413,7 +437,8 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
                         gametype=0
                         connect(0)
                 elif event.key==pygame.K_r:
-                    Game.Addentidy(Game.Entidies,Game.tmpNPC(1,Player.x+5,Player.y+5,0,0))
+                    Game.Addentidy(Game.Entidies,Game.tmpNPC(1,Player.x,Player.y,0,1))
+                    Game.Addentidy(Game.Entidies,Game.tmpNPC(2,Player.x,Player.y,0,2))
                 elif event.key==pygame.K_w:
                     iswdown=False
                 elif event.key==pygame.K_e:
@@ -438,6 +463,7 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
         if tme-lastft>=1:
             lastft=tme
             Game.frame()
+            seconddo()
             #while 1:
             #    f=random.random()*360-180
             #    if min(f+360-Player.face,Player.face+360-f,abs(f-Player.face))>=60:
@@ -445,16 +471,11 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
             #res=Game.Cat(Player.x-15*math.sin(f/radp),Player.y-15*math.cos(f/radp))
             #Game.Addentidy(Game.SpeclEntidies,res)
         if tme-lastht>=5:
-           AI_class_decide=-AI_class_decide
-           if AI_class_decide == 1 :
-               AIDefinition.Pig.AI=AIDefinition.BackAI(0.875,0.07)
-           if AI_class_decide == -1 :
-               EntidyClass.Pig.AI=AIDefinition.WalkAI(0.875,0.07)
-           lastht=tme
-           Player.hunger-=2.5
-           if Player.hunger<=0:
-               Player.life+=Player.hunger*0.2
-           Spawndo()
+            lastht=tme
+            Player.hunger-=2.5
+            if Player.hunger<0:
+                Player.life+=Player.hunger*0.2
+            Spawndo()
         if tme-lastgt>=0.05:
             lastgt=tme
             tickdo()

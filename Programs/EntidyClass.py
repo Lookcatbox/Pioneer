@@ -97,9 +97,10 @@ class SpeclEntidy(Entidy):
 class Steve(MoveEntidy):
     def __init__(self,x,y,fce,img,lfe=100.0,hungr=100.0):
         MoveEntidy.__init__(self,x,y,1,fce,img,lfe)
-        self.bag=[Item(0,0) for i in xrange(10)]
+        self.bag=[Item(0,0) for i in xrange(30)]
         self.push=0
         self.hunger=hungr
+        self.oxygen=100.0
         self.atkbl=set()
     def sayword(self,s):
         print "The woman told \""+s+"\" to you."
@@ -111,11 +112,11 @@ class tmpNPC(Steve):
         Steve.__init__(self,*args)
         self.npctype=type
     def AI(self,player):
-        if abs(self.x-player.x)<=3.0 and abs(self.y-player.y)<=3.0:
-            self.sayword("".join([chr(s) for s in (73,39,109,32,102,107,120,44,108,99,98,39,115,32,99,108,111,37,115,101,115,116,32,102,114,105,101,110,100)]))
+        if abs(self.x-player.x)<=2.0 and abs(self.y-player.y)<=2.0:
+            self.sayword("".join([chr(s) for s in (73,39,109,32,102,107,120,44,108,115,98,39,115,32,99,108,111,37,115,101,115,116,32,102,114,105,101,110,100)]))
     def dead(self):
         self.sayword("".join([chr(s) for s in \
-(73,39,109,32,100,114,111,119,110,105,110,103,33,76,99,98,32,109,117,115,116,32,99,111,109,101,32,97,110,100,32,104,101,108,112,32,109,101,33)]))
+(73,39,109,32,100,114,111,119,110,105,110,103,33,76,115,98,32,109,117,115,116,32,99,111,109,101,32,97,110,100,32,104,101,108,112,32,109,101,33)]))
 
 
 
@@ -164,6 +165,14 @@ class Wood(BlockEntidy):
     Hardnum=2
     graph=GrRect(0.5,0.5)
     imgs=[]
+class Door(BlockEntidy):
+    def __init__(self,x,y,fce,img):
+        BlockEntidy.__init__(self,x,y,1011,fce,img)
+        self.graph=GrRect(0.5,0.5)
+    CanBroke=(235,)
+    Hardnum=2
+    imgs=[]
+
 #
 class Attack(SpeclEntidy):
     def __init__(self,x,y,fce,img,lrge,ht,lst):#lrge:half long
@@ -220,12 +229,12 @@ ToBlock={1:Stone,2:Wood}
 PickaxeSpeed={234:1.0,235:1.0}
 ItemImgs={i:[] for i in (0,1,2,11,233,234,235)}
 
-ToItem={1001:2,1002:1,1004:2}
+ToItem={1001:2,1002:1,1004:2,1011:0}
 
 EatTime={11:3}
 EatGet={11:50}
 
-LoadEntImgs={"Steve":1,"Pig":1,"Treeman":1,"Mouse":1,"Tree":3,"Stone":1,"Bush":2,"Wood":1,"Attack":1,"Cat":1}
+LoadEntImgs={"Steve":3,"Pig":1,"Treeman":1,"Mouse":1,"Tree":3,"Stone":1,"Bush":2,"Wood":1,"Attack":1,"Cat":1,"Door":1}
 
 for r in LoadEntImgs:
     if LoadEntImgs[r]==1:
@@ -234,7 +243,7 @@ for r in LoadEntImgs:
         exec "%s.imgs.append(scr)" % (r,)
     else:
         for i in xrange(LoadEntImgs[r]):
-            scr=pygame.image.load("Datas/Entidy/%s/%s%d.bmp" % (r,r,i))
+            scr=pygame.image.load("Datas/Entidy/%s/%d.bmp" % (r,i))
             scr.set_colorkey((127,127,127))
             exec "%s.imgs.append(scr)" % (r,)
 

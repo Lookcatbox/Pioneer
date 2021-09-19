@@ -22,3 +22,10 @@ def gface(x,y):
         else:
             return -90
     return math.atan(float(x-400)/float(y-400))*radp+180*(y>400)
+def gf2(x,y):
+    if not y:
+        if x<=0:
+            return 90
+        else:
+            return -90
+    return math.atan(x/y)*radp+180*(y>0)
