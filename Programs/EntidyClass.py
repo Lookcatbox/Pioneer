@@ -101,8 +101,24 @@ class Steve(MoveEntidy):
         self.push=0
         self.hunger=hungr
         self.atkbl=set()
+    def sayword(self,s):
+        print "The woman told \""+s+"\" to you."
     graph=GrRect(0.3,0.3)
     imgs=[]
+
+class tmpNPC(Steve):
+    def __init__(self,type,*args):
+        Steve.__init__(self,*args)
+        self.npctype=type
+    def AI(self,player):
+        if abs(self.x-player.x)<=3.0 and abs(self.y-player.y)<=3.0:
+            self.sayword("".join([chr(s) for s in (73,39,109,32,102,107,120,44,108,99,98,39,115,32,99,108,111,37,115,101,115,116,32,102,114,105,101,110,100)]))
+    def dead(self):
+        self.sayword("".join([chr(s) for s in \
+(73,39,109,32,100,114,111,119,110,105,110,103,33,76,99,98,32,109,117,115,116,32,99,111,109,101,32,97,110,100,32,104,101,108,112,32,109,101,33)]))
+
+
+
 class Pig(MoveEntidy):
     def __init__(self,x,y,fce,img,lfe=5.0):
         MoveEntidy.__init__(self,x,y,11,fce,img,lfe)

@@ -199,6 +199,10 @@ def tickdo():
     global digtime,digpos,eattime
     flmx=fl(mx)
     flmy=fl(my)
+    flpx=fl(Player.x)
+    flpy=fl(Player.y)
+    if Game.Blockos[flpx][flpy] in {6,9}:
+        Player.life-=2.5
     dx=flmx-Player.x
     dy=flmy-Player.y
     if ismdown:
@@ -392,6 +396,8 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
                     else:
                         gametype=0
                         connect(0)
+                elif event.key==pygame.K_r:
+                    Game.Addentidy(Game.Entidies,Game.tmpNPC(1,Player.x+5,Player.y+5,0,0))
                 elif event.key==pygame.K_w:
                     iswdown=False
                 elif event.key==pygame.K_e:
@@ -415,7 +421,9 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
         tme=time.time()
         if tme-lastht>=5:
            lastht=tme
-           Player.hunger-=1
+           Player.hunger-=2.5
+           if Player.hunger<=0:
+               Player.life-=(Player.hunger/50)
         if tme-lastft>=1:
             lastft=tme
             Game.frame()

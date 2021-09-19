@@ -1,1 +1,1 @@
-"Python Pack\pythonw.exe" "Programs\Tuohuangzhe.py"
+start "" "Python Pack\pythonw.exe" "Programs\Tuohuangzhe.py"
