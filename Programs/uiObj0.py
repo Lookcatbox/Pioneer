@@ -1,4 +1,4 @@
-import time,pickle,sys,math,random,os
+import time,pickle,sys,math,random,os,AIDefinition,EntidyClass
 sys.setrecursionlimit(1000000)
 
 import Game
@@ -123,7 +123,7 @@ def screen_redraw_0():
     #16*100
     pygame.draw.rect(leftsurface,(0,0,0),(747,0,18,102),1)
     pygame.draw.rect(leftsurface,(128,128,128),(748,1,16,100),0)
-    if Game.ItemType[Player.bag[Player.push].id]==4 and Player.hunger<=100.0:
+    if Game.ItemType[Player.bag[Player.push].id]==4 and Player.hunger<=100.0 and fl(Player.hunger+Game.EatGet[Player.bag[Player.push].id])>0:
         pygame.draw.rect(leftsurface,(255,220,55),(748,1,16,fl(Player.hunger+Game.EatGet[Player.bag[Player.push].id])),0)
     if fl(Player.hunger)>0:
         pygame.draw.rect(leftsurface,(255,165,0),(748,1,16,fl(Player.hunger)),0)
@@ -201,7 +201,7 @@ def tickdo():
     flmy=fl(my)
     flpx=fl(Player.x)
     flpy=fl(Player.y)
-    if Game.Blockos[flpx][flpy] in {6,9}:
+    if Player.life>=0 and Game.Blockos[flpx][flpy] in {6,9}:
         Player.life-=2.5
     dx=flmx-Player.x
     dy=flmy-Player.y
@@ -227,6 +227,24 @@ def tickdo():
                 Player.hunger+=Game.EatGet[Player.bag[Player.push].id]
                 decrease_bag(Player.push)
                 eattime=0
+def spawnblock(x,y):
+    if Game.Blockos[x][y]==2:
+        if random.random()<0.2:
+            Game.Addentidy(Game.Entidies,Game.Pig(x+.5,y+.5,0,0))
+            Game.Addentidy(Game.Entidies,Game.Pig(x+.5,y+.5,0,0))
+            Game.Addentidy(Game.Entidies,Game.Pig(x+.5,y+.5,0,0))
+def Spawndo():
+    flpx=fl(Player.x)
+    flpy=fl(Player.y)
+    cnt=0
+    for dx in xrange(-20,21):
+        if dx in Game.Entidies:
+            for dy in xrange(-20,21):
+                if dy in Game.Entidies[dx]:
+                    cnt+=len(Game.Entidies[dx][dy])
+    if cnt<50:
+        r=random.random()
+        spawnblock(flpx+(r<0.5)*random.randint(-20,-13),flpy+(0.75<=r or r<0.25)*random.randint(-20,-13))
 def screen_redraw(gt):
     if gt==0:
         screen_redraw_0()
@@ -255,7 +273,7 @@ fontonege,fonto_10,fonto_20,gt1_comup,howdealpoint,howdealblocks,mx,my,Player, \
 ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
     pygame=pg
     pygame.init()
-    
+    AI_class_decide=1
     gametype=0
     #0~... (0:main 10:sandbox 20:multiplas)
 
@@ -274,7 +292,7 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
     bgcol=(255,255,255)
     blcol=(0,0,0)
 
-    version="Tuohuangzhe Pre-38 With Pygame"
+    version="Tuohuangzhe Pre-40 With Pygame"
 
     dtx=[]
     ltx=[]
@@ -328,8 +346,6 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
     Game.Addentidy(Game.Entidies,Player)
     Player.push=1
     for i in xrange(15):
-        TestPig=Game.Pig(63.5,63.5,0,0)
-        Game.Addentidy(Game.Entidies,TestPig)
         TestMouse=Game.Mouse(63.5,63.5,0,0)
         Game.Addentidy(Game.Entidies,TestMouse)
 
@@ -419,11 +435,6 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
         elif isedown:
             Game.move(0.15,Player)
         tme=time.time()
-        if tme-lastht>=5:
-           lastht=tme
-           Player.hunger-=2.5
-           if Player.hunger<=0:
-               Player.life-=(Player.hunger/50)
         if tme-lastft>=1:
             lastft=tme
             Game.frame()
@@ -433,6 +444,17 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
             #        break
             #res=Game.Cat(Player.x-15*math.sin(f/radp),Player.y-15*math.cos(f/radp))
             #Game.Addentidy(Game.SpeclEntidies,res)
+        if tme-lastht>=5:
+           AI_class_decide=-AI_class_decide
+           if AI_class_decide == 1 :
+               AIDefinition.Pig.AI=AIDefinition.BackAI(0.875,0.07)
+           if AI_class_decide == -1 :
+               EntidyClass.Pig.AI=AIDefinition.WalkAI(0.875,0.07)
+           lastht=tme
+           Player.hunger-=2.5
+           if Player.hunger<=0:
+               Player.life+=Player.hunger*0.2
+           Spawndo()
         if tme-lastgt>=0.05:
             lastgt=tme
             tickdo()

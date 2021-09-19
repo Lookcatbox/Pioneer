@@ -9,9 +9,6 @@ class edito:
     def draw(self,scr,where):
         scr.blit(self.fonto.render(self.string,False,(0,0,0),(255,255,255)),where)
         #screen.draw()
-def pus(pos):
-    if pos[1]>=600 and pos[1]<700 and pos[0]<200:
-        return True
 def main(pg,gtkey):
     global pygame,editpos,editos,edith
     pygame=pg
@@ -31,8 +28,6 @@ def main(pg,gtkey):
             if event.type==pygame.QUIT:
                 return True
             elif event.type==pygame.MOUSEBUTTONUP:
-                if pus(event.pos):
-                    return
                 if event.pos[0]>=100 and event.pos[0]<700 and event.pos[1]>=600 and event.pos[1]<700:
                     editos=editium
                 else:

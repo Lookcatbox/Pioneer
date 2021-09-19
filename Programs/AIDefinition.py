@@ -19,6 +19,10 @@ def move(speed,ent):
     ent.force.x-=speed*math.sin(ent.face/radp)
     ent.force.y-=speed*math.cos(ent.face/radp)
 #
+def back_route(peo):
+    peo.turn.x=-peo.turn.x
+    peo.turn.y=-peo.turn.y
+    
 def ChaseAI(self,player):
     SpeclEnt[fl(self.x)][fl(self.y)].remove(self)
     self.face=gface(player.x-self.x,player.y-self.y)
@@ -31,6 +35,12 @@ def WalkAI(ch,sp):
             move(sp,self)
         else:
             route((random.random()-0.5)*30,self)
+    return Temp
+
+def BackAI(ch,sp):
+    def Temp(self,player):
+            back_route(self)
+            move(sp,self)
     return Temp
 
 Pig.AI=WalkAI(0.875,0.07)
