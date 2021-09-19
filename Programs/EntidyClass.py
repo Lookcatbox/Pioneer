@@ -95,10 +95,11 @@ class SpeclEntidy(Entidy):
         pass
 #
 class Steve(MoveEntidy):
-    def __init__(self,x,y,fce,img,lfe=100.0):
+    def __init__(self,x,y,fce,img,lfe=100.0,hungr=100.0):
         MoveEntidy.__init__(self,x,y,1,fce,img,lfe)
         self.bag=[Item(0,0) for i in xrange(10)]
         self.push=0
+        self.hunger=hungr
         self.atkbl=set()
     graph=GrRect(0.3,0.3)
     imgs=[]
@@ -196,13 +197,17 @@ class Item:
         self.cnt=cnt
         self.img=0
 ItemHeap={0:1,1:64,2:64,11:64,233:1,234:1,235:1}
-ItemType={0:0,1:1,2:1,11:0,233:2,234:3,235:3}
+ItemType={0:0,1:1,2:1,11:4,233:2,234:3,235:3}
 #0:Other 1:Block 2:Sword 3:Pickaxe/Axe
+#4:Eaten
 ToBlock={1:Stone,2:Wood}
 PickaxeSpeed={234:1.0,235:1.0}
 ItemImgs={i:[] for i in (0,1,2,11,233,234,235)}
 
 ToItem={1001:2,1002:1,1004:2}
+
+EatTime={11:3}
+EatGet={11:50}
 
 LoadEntImgs={"Steve":1,"Pig":1,"Treeman":1,"Mouse":1,"Tree":3,"Stone":1,"Bush":2,"Wood":1,"Attack":1,"Cat":1}
 

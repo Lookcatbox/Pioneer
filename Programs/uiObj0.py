@@ -54,6 +54,7 @@ def gametype_0():
     gt0_re=edito(1180,35,fonto_20)
 #
 def screen_redraw_0():
+    leftsurface=screen
     blockleast=[fl(Player.x)-13,fl(Player.y)-13]
     leftsurface.fill((255,255,255))
     for i in xrange(27):
@@ -119,7 +120,14 @@ def screen_redraw_0():
     nur=Int_tSurface(fl(Player.life))
     nur=pygame.transform.scale2x(nur)
     leftsurface.blit(nur,(782-nur.get_width()/2,102-nur.get_height()/2))
-    screen.blit(leftsurface,[0,0])
+    #16*100
+    pygame.draw.rect(leftsurface,(0,0,0),(747,0,18,102),1)
+    pygame.draw.rect(leftsurface,(128,128,128),(748,1,16,100),0)
+    if Game.ItemType[Player.bag[Player.push].id]==4 and Player.hunger<=100.0:
+        pygame.draw.rect(leftsurface,(255,220,55),(748,1,16,fl(Player.hunger+Game.EatGet[Player.bag[Player.push].id])),0)
+    if fl(Player.hunger)>0:
+        pygame.draw.rect(leftsurface,(255,165,0),(748,1,16,fl(Player.hunger)),0)
+
 TexBarx=(528,240,272,304,336,368,400,432,464,496)
 #[240+32*9]+[208+32*i for i in xrange(1,10)]
 def screen_redraw_1():
@@ -136,6 +144,10 @@ def screen_redraw_1():
     screen.blit(xsf,(0,0))
     screen.blit(ysf,(xsf.get_width()+16,0))
 #
+def decrease_bag(which):
+    Player.bag[which].cnt-=1
+    if not Player.bag[which].cnt:
+        Player.bag[which]=Game.Item(0,0)
 def push_0(pos,lpos):
     global editos
     editos=0
@@ -148,9 +160,7 @@ def push_0(pos,lpos):
             bet=(Game.ToBlock[Player.bag[Player.push].id])(flmx+0.5,flmy+0.5,0,0)
             if Game.CanPush(bet):
                 Game.SetBlockentidy(Game.BlockEntidies,bet)
-                Player.bag[Player.push].cnt-=1
-                if not Player.bag[Player.push].cnt:
-                    Player.bag[Player.push]=Game.Item(0,0)
+                decrease_bag(Player.push)
     elif Game.ItemType[Player.bag[Player.push].id]==2:
         atk=Game.Attack(Player.x-0.35*math.sin(Player.face/radp),Player.y-0.35*math.cos(Player.face/radp),Player.face,0,0.3,1e6,1)
         Player.atkbl.add(atk)
@@ -186,14 +196,14 @@ def pushend(pos,lpos):
     global digtime
     digtime=0
 def tickdo():
-    global digtime,digpos
+    global digtime,digpos,eattime
     flmx=fl(mx)
     flmy=fl(my)
     dx=flmx-Player.x
     dy=flmy-Player.y
-    if ismdown and \
-       Game.ItemType[Player.bag[Player.push].id]==3:
-        if min(dx*dx,(dx+1)*(dx+1))+min(dy*dy,(dy+1)*(dy+1))<=9.0 and \
+    if ismdown:
+        if Game.ItemType[Player.bag[Player.push].id]==3 and \
+           min(dx*dx,(dx+1)*(dx+1))+min(dy*dy,(dy+1)*(dy+1))<=9.0 and \
            flmx in Game.BlockEntidies and \
            flmy in Game.BlockEntidies[flmx] and \
            Player.bag[Player.push].id in Game.BlockEntidies[flmx][flmy].CanBroke:
@@ -206,6 +216,13 @@ def tickdo():
             else:
                 digpos=(flmx,flmy)
                 digtime=0
+        elif Game.ItemType[Player.bag[Player.push].id]==4 and \
+             Player.hunger<=100.0:
+            eattime+=1
+            if eattime>=Game.EatTime[Player.bag[Player.push].id]:
+                Player.hunger+=Game.EatGet[Player.bag[Player.push].id]
+                decrease_bag(Player.push)
+                eattime=0
 def screen_redraw(gt):
     if gt==0:
         screen_redraw_0()
@@ -230,8 +247,8 @@ class edito:
 #
 def main(pg,gtkey,sed):
     global gametype,errimg,blockimg,GBlock,BBlock,bgcol,blcol,dtx,ltx,fontonum, \
-fontonege,fonto_10,fonto_20,gt1_comup,leftsurface,howdealpoint,howdealblocks,mx,my,Player, \
-ismdown,digtime,digpos,screen,pygame,editpos,editos,edith
+fontonege,fonto_10,fonto_20,gt1_comup,howdealpoint,howdealblocks,mx,my,Player, \
+ismdown,digtime,digpos,screen,pygame,editpos,editos,edith,eattime
     pygame=pg
     pygame.init()
     
@@ -253,7 +270,7 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith
     bgcol=(255,255,255)
     blcol=(0,0,0)
 
-    version="Tuohuangzhe Pre-37 With Pygame"
+    version="Tuohuangzhe Pre-38 With Pygame"
 
     dtx=[]
     ltx=[]
@@ -269,14 +286,13 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith
     fonto_10=pygame.font.Font(None,10)
     fonto_20=pygame.font.Font(None,20)
     gt1_comup=fonto_20.render(version,False,blcol,bgcol)
-    leftsurface=pygame.Surface((800,800))
     
     mdownpos=[]
     ismdown=False#mousekey
     
     issdown=False#shift
-    isf3down=False#F3
     iswdown=False#W
+    isedown=False#E
 
     editpos=[0,0]
     edith=23
@@ -289,7 +305,8 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith
 
     Game.init(sed)
     screen=pygame.display.set_mode((800,800))#0~799 0~799
-    lastgt=lastft=0
+    lastgt=lastft=lastht=0
+    ecnt=0
     digtime=0
     digpos=(0.5,0.5)
 
@@ -338,14 +355,16 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith
             elif event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_LSHIFT or event.key==pygame.K_RSHIFT:
                     issdown=True
-                elif event.key==pygame.K_F3:
-                    isf3down=True
                 elif event.key==pygame.K_w:
                     iswdown=True
+                elif event.key==pygame.K_e:
+                    isedown=True
                 elif event.key>=pygame.K_0 and event.key<=pygame.K_9:
                     Player.push=event.key-pygame.K_0
+                    digtime=eattime=0
                 elif event.key>=pygame.K_KP0 and event.key<=pygame.K_KP9:
                     Player.push=event.key-pygame.K_KP0
+                    digtime=eattime=0
             elif event.type==pygame.KEYUP:
                 if editos:
                     if event.key==pygame.K_BACKSPACE:
@@ -367,17 +386,16 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith
                         editos.fpos+=1
                         editos.string=editos.string+gtkey[event.key][int(issdown)]
                 elif event.key==pygame.K_F3:
-                    isf3down=False
-                elif event.key==pygame.K_r:
-                    if isf3down:
-                        if gametype==0:
-                            gametype=1
-                            connect(1)
-                        else:
-                            gametype=0
-                            connect(0)
+                    if gametype==0:
+                        gametype=1
+                        connect(1)
+                    else:
+                        gametype=0
+                        connect(0)
                 elif event.key==pygame.K_w:
                     iswdown=False
+                elif event.key==pygame.K_e:
+                    isedown=False
 
         mousepos=pygame.mouse.get_pos()
         mousepos=[mousepos[0],mousepos[1]]
@@ -392,8 +410,14 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith
         Player.face=ptoface
         if iswdown:
             Game.move(0.3,Player)
-        if time.time()-lastft>=1:
-            lastft=time.time()
+        elif isedown:
+            Game.move(0.15,Player)
+        tme=time.time()
+        if tme-lastht>=5:
+           lastht=tme
+           Player.hunger-=1
+        if tme-lastft>=1:
+            lastft=tme
             Game.frame()
             #while 1:
             #    f=random.random()*360-180
@@ -401,8 +425,8 @@ ismdown,digtime,digpos,screen,pygame,editpos,editos,edith
             #        break
             #res=Game.Cat(Player.x-15*math.sin(f/radp),Player.y-15*math.cos(f/radp))
             #Game.Addentidy(Game.SpeclEntidies,res)
-        if time.time()-lastgt>=0.05:
-            lastgt=time.time()
+        if tme-lastgt>=0.05:
+            lastgt=tme
             tickdo()
             Game.execute()
         screen_redraw(gametype)

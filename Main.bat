@@ -1,2 +1,1 @@
-"Python Pack\python.exe" "Programs\Tuohuangzhe.py"
-pause
+"Python Pack\pythonw.exe" "Programs\Tuohuangzhe.py"
